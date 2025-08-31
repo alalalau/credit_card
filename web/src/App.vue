@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted } from "vue";
-import { supabase } from "./db/db";
+import { supabase, getTransactions } from "./db/db";
 
 const allowed = ref(false);
 const expectedHash = "8bdb8a4e290b4228be173b495635360c28fe4815b6cb8491d6745597fd400192";
@@ -22,6 +22,7 @@ onMounted(async () => {
   const hash = await sha256Hex(input);
   if (hash === expectedHash) {
     allowed.value = true;
+    console.log("allowed");
     const transactions = await getTransactions(2, 2025);
     console.log(transactions);
   } else {
