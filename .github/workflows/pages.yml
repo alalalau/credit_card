@@ -22,15 +22,37 @@ jobs:
         working-directory: web
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+
+      # optional npm cache if you later add a lockfile
+      # - uses: actions/cache@v4
+      #   with:
+      #     path: ~/.npm
+      #     key: ${{ runner.os }}-node-${{ hashFiles('web/package-lock.json') }}
+      #     restore-keys: |
+      #       ${{ runner.os }}-node-
+
       - run: npm ci || npm install
+
       - run: npm run build
         env:
           VITE_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           VITE_SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+
+      # make SPA refresh work on GitHub Pages
       - run: cp dist/index.html dist/404.html
+
+      # sanity checks so you can see the files in the logs
+      - run: ls -la
+      - run: ls -la dist
+
+      # required by Pages
+      - uses: actions/configure-pages@v5
+
+      # upload the right folder
       - uses: actions/upload-pages-artifact@v3
         with:
           path: web/dist
