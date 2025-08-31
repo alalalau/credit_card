@@ -31,12 +31,31 @@ jobs:
         working-directory: web
         run: npm ci
 
+      - name: Check secrets are present
+        working-directory: web
+        run: |
+          if [ -z "${{ secrets.SUPABASE_URL }}" ] || [ -z "${{ secrets.SUPABASE_KEY }}" ]; then
+            echo "Secrets are missing"
+            exit 1
+          else
+            echo "Secrets are set"
+          fi
+
       - name: Build
         working-directory: web
         run: npm run build
         env:
           VITE_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           VITE_SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+      
+      - name: Verify build saw env
+        working-directory: web
+        run: |
+          if grep -q "VITE_SUPABASE_URL" dist/index.html; then
+            echo "Env symbol found in bundle"
+          else
+            echo "Env symbol not found in bundle"
+          fi
 
       - name: Create SPA fallback
         run: cp web/dist/index.html web/dist/404.html
